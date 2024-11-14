@@ -1,0 +1,175 @@
+﻿<Window x:Class="LearningLog2024.EntryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LearningLog2024"
+        mc:Ignorable="d"
+        Title="Learning Log"
+        MinHeight="350" Height="450"
+        MinWidth="450" Width="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="40" MinHeight="30"/>
+        </Grid.RowDefinitions>
+
+        <TabControl x:Name="tabController" SelectionChanged="TabChanged">
+            <!-- The entry tab. -->
+            <TabItem x:Name="tabEntry" Header="_Entry" ToolTip="Create a new entry" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" MinHeight="50"/>
+                        <RowDefinition Height="1*" MinHeight="40"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="3*" MinHeight="50"/>
+                        <RowDefinition Height="1*" MinHeight="50"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Record button -->
+                    <Button x:Name="buttonRecord" Grid.Column="0" Grid.Row="0" Width="120" Margin="5" Click="RecordClick" ToolTip="Click to start the audio recording">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Label x:Name="labelRecordIcon" FontFamily="Segoe UI Symbol" FontSize="20" Content="&#xE1D6;" Grid.Column="0" HorizontalAlignment="Right"/>
+                            <Label x:Name="labelRecordText" Content="_Record" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                        </Grid>
+                    </Button>
+                    <!-- Playback button -->
+                    <Button x:Name="buttonPlay" Grid.Column="1" Grid.Row="0" Width="120" Margin="5" IsEnabled="False" ToolTip="Click to playback the audio recording" Click="PlayClick">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Label FontFamily="Segoe UI Symbol" FontSize="20" Content="&#xE102;" Grid.Column="0" HorizontalAlignment="Right"/>
+                            <Label Content="_Play" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                        </Grid>
+                    </Button>
+                    <!-- Delete button -->
+                    <Button x:Name="buttonDelete"  Grid.Column="2" Grid.Row="0" Width="120" Margin="5" IsEnabled="False" ToolTip="Click to delete the audio recording" Click="DeleteClick">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Label FontFamily="Segoe UI Symbol" FontSize="20" Content="&#xE107;" Grid.Column="0" HorizontalAlignment="Right"/>
+                            <Label Content="_Delete" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                        </Grid>
+                    </Button>
+
+                    <!-- Row 1..? -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Center">
+                        <Label Content="Wellness:"  Target="{Binding ElementName=comboWellness}" Margin="5"/>
+                        <ComboBox x:Name="comboWellness" Margin="5" MinWidth="50" ToolTip="Select a wellness rating" IsEditable="False" />
+                        <Label Content="_Quality:" Target="{Binding ElementName=comboQuality}" Margin="5"/>
+                        <ComboBox x:Name="comboQuality" Margin="5" MinWidth="50" ToolTip="Select a quality rating" IsEditable="False" />
+                    </StackPanel>
+
+                    <!-- Row 2. Just the notes label. -->
+                    <Label Content="_Notes:" Grid.Column="0" Grid.Row="2" Target="{Binding ElementName=textNotes}" VerticalAlignment="Bottom"/>
+
+                    <!-- Row 3. Just the big textbox. -->
+                    <TextBox x:Name="textNotes" Grid.ColumnSpan="3" Grid.Row="3" Margin="5" ToolTip="Enter any notes about today's entry"/>
+
+                    <!-- Row 4. Just the save button. -->
+                    <Button x:Name="buttonSave" Grid.Column="1" Grid.Row="4" Width="120" Margin="5" IsEnabled="False" ToolTip="Click to finalize and save this entry" Click="SaveClick">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <Label FontFamily="Segoe UI Symbol" FontSize="20" Content="&#xE105;" Grid.Column="0" HorizontalAlignment="Right"/>
+                            <Label Content="Sa_ve" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                        </Grid>
+                    </Button>
+                </Grid>
+            </TabItem>
+            <!-- The summary tab. -->
+            <TabItem x:Name="tabSummary" Header="_Summary" ToolTip="View the summary" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Number of entries: " Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBox x:Name="textNumberOfEntries" Grid.Row="0" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="50" IsReadOnly="True" ToolTip="Displays the number of entries so far"/>
+                    <Label Content="First entry: " Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBox x:Name="textFirstEntry" Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="50" IsReadOnly="True" ToolTip="Displays the first entry's date"/>
+                    <Label Content="Newest entry: " Grid.Row="2" Grid.Column="0" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBox x:Name="textNewestEntry" Grid.Row="2" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="50" IsReadOnly="True" ToolTip="Displays the newest entry's date"/>
+                </Grid>
+
+            </TabItem>
+            <!-- The summary tab. -->
+            <TabItem x:Name="tabList" Header="_List" ToolTip="View the list of past entries" >
+                <Grid>
+                    <ListView x:Name="listViewEntries" Margin="10" ToolTip="Displays all saved entries" SelectionChanged="ListViewSelectionChanged">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="ID" DisplayMemberBinding="{Binding Id}" Width="50"/>
+                                <GridViewColumn Header="Date" DisplayMemberBinding="{Binding EntryDate}" Width="100"/>
+                                <GridViewColumn Header="Type" DisplayMemberBinding="{Binding EntryType}" Width="100"/>
+                                <GridViewColumn Header="Details" DisplayMemberBinding="{Binding Details}" Width="300"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                </Grid>
+
+            </TabItem>
+            <TabItem x:Name="tabTextEntry" Header="_Text Entry" ToolTip="Create a text entry">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="115*"/>
+                        <ColumnDefinition Width="379*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="3*" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Text Entry Input -->
+                    <Label Content="_Text:" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0" />
+                    <TextBox x:Name="textTextEntry" Grid.Row="1" Margin="5,5,5,5" ToolTip="Enter text for this log entry" Grid.ColumnSpan="2" />
+
+                    <!-- Save Button -->
+                    <Button x:Name="buttonSaveText" Grid.Row="2" Width="120" Height="30" Margin="72,21,0,22"
+                HorizontalAlignment="Left" ToolTip="Click to save this text entry" Click="SaveTextClick" Grid.Column="1">
+                        Save
+                    </Button>
+                </Grid>
+            </TabItem>
+
+
+        </TabControl>
+
+        <StatusBar Grid.Row="1" >
+            <StatusBarItem x:Name="statusState" />
+        </StatusBar>
+
+    </Grid>
+
+</Window>
