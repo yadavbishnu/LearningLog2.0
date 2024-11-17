@@ -14,6 +14,9 @@ using System.Media;
 
 namespace LearningLog2024
 {
+    /// <summary>
+    /// Interaction logic for EntryWindow.xaml
+    /// </summary>
     public partial class EntryWindow : Window
     {
         bool isRecording = false;
@@ -25,7 +28,6 @@ namespace LearningLog2024
         public EntryWindow()
         {
             InitializeComponent();
-
             // Populate the ComboBoxes.
             for (int counter = 1; counter <= 5; counter++)
             {
@@ -39,116 +41,85 @@ namespace LearningLog2024
         }
 
         /// <summary>
-        /// Start or stop recording.
+        /// If not recording, start a recording and allow the user to end the recording.
+        /// If recording, end the recording and allow the user to save and delete the recording.
         /// </summary>
         private void RecordClick(object sender, RoutedEventArgs e)
         {
-            try
+            if (!isRecording)
             {
-                if (!isRecording)
-                {
-                    labelRecordText.Content = "Stop";
-                    isRecording = true;
-                    RecordWav.StartRecording();
-                    buttonSave.IsEnabled = false;
-                    buttonPlay.IsEnabled = false;
-                    UpdateStatus("Recording started.");
-                }
-                else
-                {
-                    labelRecordText.Content = "_Record";
-                    isRecording = false;
-                    recordingFile = RecordWav.EndRecording();
-
-                    if (recordingFile == null || !recordingFile.Exists)
-                        throw new IOException("Recording failed to save.");
-
-                    buttonSave.IsEnabled = true;
-                    buttonPlay.IsEnabled = true;
-                    buttonDelete.IsEnabled = true;
-                    UpdateStatus($"Recording completed and saved to {recordingFile.FullName}");
-                }
+                labelRecordText.Content = "Stop";
+                isRecording = true;
+                RecordWav.StartRecording();
+                buttonSave.IsEnabled = false;
+                buttonPlay.IsEnabled = false;
+                UpdateStatus("Recording started.");
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Error during recording: {ex.Message}", "Recording Error");
-                ResetForm();
+                labelRecordText.Content = "_Record";
+                isRecording = false;
+                recordingFile = RecordWav.EndRecording();
+                buttonSave.IsEnabled = true;
+                buttonPlay.IsEnabled = true;
+                buttonDelete.IsEnabled = true;
+                UpdateStatus("Recording completed and saved to " + recordingFile.FullName);
             }
         }
 
         /// <summary>
-        /// Save an audio entry.
+        /// Save an entry; creates a LogEntry object.
         /// </summary>
         private void SaveClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Ensure required fields are filled.
-                ValidateComboBoxSelection();
-
-                // Create an AudioLogEntry.
                 if (tabController.SelectedItem == tabEntry)
                 {
+                    // Create an AudioLogEntry
                     var newEntry = new AudioLogEntry(
                         (int)comboWellness.SelectedItem,
                         (int)comboQuality.SelectedItem,
                         textNotes.Text,
                         recordingFile
                     );
-                    UpdateStatus($"Audio entry saved: {newEntry.GetDetails()}");
+                    UpdateStatus("Audio entry saved: " + newEntry.GetDetails());
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving audio entry: {ex.Message}", "Error");
             }
+
             ResetForm();
         }
 
         /// <summary>
-        /// Save a text entry.
+        /// Write a message to the status bar.
         /// </summary>
-        private void SaveTextClick(object sender, RoutedEventArgs e)
+        /// <param name="status">Message to write to the status bar</param>
+        private void UpdateStatus(string status)
         {
-            try
-            {
-                // Ensure required fields are filled.
-                ValidateComboBoxSelection();
-                if (string.IsNullOrWhiteSpace(textTextEntry.Text))
-                    throw new ArgumentException("Text entry content cannot be empty.");
-
-                // Create a TextLogEntry.
-                if (tabController.SelectedItem == tabTextEntry)
-                {
-                    var newTextEntry = new TextLogEntry(
-                        (int)comboWellness.SelectedItem,
-                        (int)comboQuality.SelectedItem,
-                        textNotes.Text,
-                        textTextEntry.Text
-                    );
-                    UpdateStatus($"Text entry saved: {newTextEntry.GetDetails()}");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving text entry: {ex.Message}", "Error");
-            }
-            ResetForm();
+            statusState.Content = DateTime.Now.ToString("MM/dd/yy H:mm:ss") + ": " + status;
         }
 
         /// <summary>
-        /// Play the saved recording.
+        /// Play button attempts to play the file.
         /// </summary>
         private void PlayClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (recordingFile == null || !recordingFile.Exists)
-                    throw new FileNotFoundException("Recording file not found.");
-
-                var player = new SoundPlayer(recordingFile.FullName);
-                player.Play();
-                UpdateStatus($"Playing {recordingFile.FullName}");
+                if (File.Exists(recordingFile.FullName))
+                {
+                    var player = new SoundPlayer(recordingFile.FullName);
+                    player.Play();
+                    UpdateStatus("Playing " + recordingFile.FullName);
+                }
+                else
+                {
+                    throw new FileNotFoundException("The file does not exist.", recordingFile.FullName);
+                }
             }
             catch (Exception ex)
             {
@@ -157,57 +128,19 @@ namespace LearningLog2024
         }
 
         /// <summary>
-        /// Delete the saved recording.
-        /// </summary>
-        private void DeleteClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (recordingFile == null || !recordingFile.Exists)
-                    throw new FileNotFoundException("Recording file not found.");
-
-                File.Delete(recordingFile.FullName);
-                UpdateStatus($"Deleted {recordingFile.FullName}");
-
-                buttonSave.IsEnabled = false;
-                buttonPlay.IsEnabled = false;
-                buttonDelete.IsEnabled = false;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error deleting file: {ex.Message}", "Error");
-            }
-        }
-
-        /// <summary>
-        /// Handle tab selection changes.
+        /// When the tab changes, update the status bar.
         /// </summary>
         private void TabChanged(object sender, RoutedEventArgs e)
         {
             if (tabController.SelectedItem == tabSummary)
             {
+                // Update the summary tab fields.
                 textNumberOfEntries.Text = LogEntry.Count.ToString();
-                textFirstEntry.Text = LogEntry.FirstEntry != DateTime.MinValue ? LogEntry.FirstEntry.ToShortDateString() : "N/A";
-                textNewestEntry.Text = LogEntry.NewestEntry != DateTime.MinValue ? LogEntry.NewestEntry.ToShortDateString() : "N/A";
-                UpdateStatus("Viewing summary tab.");
+                textFirstEntry.Text = LogEntry.FirstEntry.ToString();
+                textNewestEntry.Text = LogEntry.NewestEntry.ToString();
+
+                UpdateStatus("Viewing summary");
             }
-        }
-
-        /// <summary>
-        /// Validate ComboBox selections.
-        /// </summary>
-        private void ValidateComboBoxSelection()
-        {
-            if (comboWellness.SelectedItem == null || comboQuality.SelectedItem == null)
-                throw new InvalidOperationException("Wellness and Quality must be selected.");
-        }
-
-        /// <summary>
-        /// Update the status bar with a message.
-        /// </summary>
-        private void UpdateStatus(string status)
-        {
-            statusState.Content = $"{DateTime.Now:MM/dd/yy H:mm:ss}: {status}";
         }
 
         /// <summary>
@@ -222,18 +155,67 @@ namespace LearningLog2024
             buttonSave.IsEnabled = false;
             buttonPlay.IsEnabled = false;
             buttonDelete.IsEnabled = false;
-            textNotes.Text = string.Empty;
+            textNotes.Text = String.Empty;
         }
 
         /// <summary>
-        /// Handle ListView selection changes.
+        /// Clear the current saved file.
         /// </summary>
+        private void DeleteClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (File.Exists(recordingFile.FullName))
+                {
+                    File.Delete(recordingFile.FullName);
+                    UpdateStatus("Deleted " + recordingFile.FullName);
+                }
+                else
+                {
+                    throw new FileNotFoundException("The file does not exist.", recordingFile.FullName);
+                }
+
+                buttonSave.IsEnabled = false;
+                buttonPlay.IsEnabled = false;
+                buttonDelete.IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting file: {ex.Message}", "Error");
+            }
+        }
+
+        private void SaveTextClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (tabController.SelectedItem == tabTextEntry)
+                {
+                    // Create a TextLogEntry
+                    var newTextEntry = new TextLogEntry(
+                        (int)comboWellness.SelectedItem,
+                        (int)comboQuality.SelectedItem,
+                        textNotes.Text,
+                        textTextEntry.Text
+                    );
+                    UpdateStatus("Text entry saved: " + newTextEntry.GetDetails());
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving text entry: {ex.Message}", "Error");
+            }
+
+            ResetForm();
+        }
+
         private void ListViewSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (listViewEntries.SelectedItem is LogEntry selectedEntry)
             {
                 MessageBox.Show($"Selected Entry Details:\n{selectedEntry.Details}", "Entry Details");
             }
+
         }
     }
 }
